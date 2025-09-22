@@ -1,1 +1,652 @@
-"hi MYSQL" 
+SQL : DATA MODELING TERMINOLOGIES:
+
+Entity -> Relation (Table)
+Attributes
+Relationship -> (A STUDENT belongs to a particular DEPARTMENT)
+
+Relation: Table
+Tuple: A row (Record / Object)
+Attribute: A column in a Table
+Degree: Number of Attributes
+Cardinality: Number of Tuples
+Primary Key: An Identifier to uniquely represent a Row
+
+KEY: one or more columns used to search rows
+Primary Key: One or More columns which uniquely Identify a row
+
+In DBs, the Primary Key must be (Unique and Not Null)
+
+CONSTRAINTS:
+not null
+unique
+auto increment
+foreign key
+
+=============================================================================
+SQL Commands
+
+1> DDL (Data Definition Language) :Used for schema definition.
+
+Examples: CREATE, ALTER, DROP, TRUNCATE
+
+ CREATE TABLE Employee (
+  	   emp_id INT PRIMARY KEY,
+  	   name VARCHAR(50),
+  	   salary DECIMAL(10,2)
+  	);
+
+ 	ALTER TABLE Employee ADD COLUMN dept VARCHAR(20);
+	  DROP TABLE Employee;
+	  TRUNCATE TABLE Employee;
+--------------------------------------------------
+
+DML (Data Manipulation Language) :Used for manipulating data.
+
+Examples: INSERT, UPDATE, DELETE, SELECT
+
+	INSERT INTO Employee VALUES (1, 'John', 50000, 'HR');
+	UPDATE Employee SET salary = 60000 WHERE emp_id = 1;
+	DELETE FROM Employee WHERE emp_id = 1;
+	SELECT * FROM Employee;
+
+---------------------------------------------------------
+Keys:
+Primary Key → Uniquely identifies a record.
+Foreign Key → Links one table to another.
+Unique Key → Ensures all values are unique but allows NULL.
+
+
+CREATE TABLE Department (
+	   dept_id INT PRIMARY KEY,
+	   dept_name VARCHAR(50) UNIQUE
+	);
+
+	CREATE TABLE Employee (
+	   emp_id INT PRIMARY KEY,
+	   name VARCHAR(50),
+	   dept_id INT,
+	   FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+	);
+------------------------------------------------------------------
+
+NORMALIZATION:
+
+It is a way/tool to improve and validate the logical design of a DB.
+
+* It simplifies the complicated large sized DB into smaller chuks of DB which are simple to read and understand.
+* It helps in implementation of HIGH-COHESION and thus the tables created become easy to maintain.
+* It reduces the redundancy.
+Process of organizing data to reduce redundancy and improve data integrity.
+Normalization when applied extensively, it may reduce the redundancy, but it will create efficiency issues.
+
+1NF: If every cell in a table is having one data (Atomic)
+    1NF (First Normal Form)
+	No repeating groups or arrays.
+	Each cell contains a single value.
+	
+	Bad table (Not 1NF):
+	Student(id, name, subjects)
+	(1, 'Ram', 'Math, Science')
+
+	Normalized (1NF):
+
+	Student(id, name, subject)
+	(1, 'Ram', 'Math')
+	(1, 'Ram', 'Science')
+	
+---------------------------------
+2NF: Any Table which doesn't exhibit Partial Functional Dependency, then the table is said to be in 2NF.
+
+   2NF (Second Normal Form)
+	Must be in 1NF.
+
+	No partial dependency (non-key attributes depend on full primary key).
+
+	Example:
+	Table Student_Course(student_id, course_id, student_name)
+	student_name depends only on student_id.
+
+	Split into:
+
+	Student(student_id, student_name)
+
+	Student_Course(student_id, course_id)
+--------------------------------------
+3NF (Third Normal Form)
+
+Must be in 2NF.
+No transitive dependency (non-key attribute depending on another non-key attribute).
+
+Example:
+Table Employee(emp_id, emp_name, dept_id, dept_name)
+dept_name depends on dept_id.
+
+Split into:
+
+Employee(emp_id, emp_name, dept_id)
+Department(dept_id, dept_name)
+===========================================================================================
+
+Transactions
+
+A transaction is a sequence of SQL operations executed as a single unit.
+
+	Commands:
+
+	START TRANSACTION – start transaction
+
+	COMMIT – save changes
+
+	ROLLBACK – undo changes
+
+	SAVEPOINT – set a checkpoint
+
+	START TRANSACTION;
+	UPDATE products SET stock = stock - 1 WHERE id = 101;
+	INSERT INTO sales(product_id, qty) VALUES (101, 1);
+	COMMIT;
+====================================================================================================
+ACID Properties :
+
+ACID stands for Atomicity, Consistency, Isolation, Durability. These are the guarantees for reliable transactions.
+	Atomicity → All operations in a transaction either complete fully or not at all.
+	Consistency → Ensures the database remains valid before and after a transaction.
+	Isolation → Transactions run independently, without interfering with each other.
+	Durability → Once a transaction is committed, it is permanently stored (even if system crashes).
+	
+Example:
+
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 500 WHERE acc_id = 1; -- debit
+UPDATE accounts SET balance = balance + 500 WHERE acc_id = 2; -- credit
+COMMIT; -- ensures both succeed, else ROLLBACK
+===========================================================================================
+
+Stored Procedure
+
+Reusable SQL block stored in DB.
+Stored procedures are named routines stored in the database server that encapsulate SQL logic and control flow. 
+Useful for complex operations, reducing client-server round-trips.
+
+Benefits
+
+Encapsulate business logic close to data.
+Reduce network overhead.
+Can use variables, flow control, cursors, handlers.
+
+Syntax:
+
+	DELIMITER //
+	CREATE PROCEDURE GetEmployee(IN dept VARCHAR(50))
+	BEGIN
+	   SELECT * FROM Employee WHERE dept_id = dept;
+	END //
+	DELIMITER ;
+	
+Call Procedure:
+
+   CALL GetEmployee('HR');
+   
+   
+1.Create a procedure that returns all customers from a city.
+
+	DELIMITER $$
+
+	CREATE PROCEDURE GetCustomersByCity(IN city_name VARCHAR(50))
+	BEGIN
+		SELECT * FROM Customers WHERE City = city_name;
+	END $$
+
+	DELIMITER ;
+ 
+ 
+    CALL GetCustomersByCity('Mumbai');
+	
+	
+2.Given CustomerID, return how many orders they placed.
+
+	DELIMITER $$
+
+	CREATE PROCEDURE GetOrderCountByCustomer(IN cust_id INT, OUT total_orders INT)
+	BEGIN
+		SELECT COUNT(*) INTO total_orders
+		FROM Orders
+		WHERE CustomerID = cust_id;
+	END $$
+
+	DELIMITER ;
+	
+	CALL GetOrderCountByCustomer(1, @total);
+    SELECT @total;
+
+	
+3.Insert a new row into Customers using parameters.
+
+	DELIMITER $$
+
+	CREATE PROCEDURE AddCustomer(
+		IN cust_id INT,
+		IN cust_name VARCHAR(50),
+		IN cust_city VARCHAR(50),
+		IN cust_age INT
+	)
+	BEGIN
+		INSERT INTO Customers (CustomerID, Name, City, Age)
+		VALUES (cust_id, cust_name, cust_city, cust_age);
+	END $$
+
+	DELIMITER ;
+	
+	CALL AddCustomer(6, 'Frank', 'Chennai', 29);
+
+	
+4.Update a customer’s city by ID.
+
+	DELIMITER $$
+
+	CREATE PROCEDURE UpdateCustomerCity(IN cust_id INT, IN new_city VARCHAR(50))
+	BEGIN
+		UPDATE Customers
+		SET City = new_city
+		WHERE CustomerID = cust_id;
+	END $$
+
+	DELIMITER ;
+
+
+    CALL UpdateCustomerCity(3, 'Hyderabad');
+	
+5.List customers who have placed orders greater than a given amount
+
+	DELIMITER $$
+
+	CREATE PROCEDURE GetHighValueCustomers(IN min_amount DECIMAL(10,2))
+	BEGIN
+		SELECT DISTINCT c.CustomerID, c.Name, c.City, o.Amount
+		FROM Customers c
+		JOIN Orders o ON c.CustomerID = o.CustomerID
+		WHERE o.Amount > min_amount;
+	END $$
+
+	DELIMITER ;
+	
+	CALL GetHighValueCustomers(7000);
+
+==================================================================================
+Functions
+============================================================================
+User-defined functions return a value.
+
+Syntax:
+
+    DELIMITER //
+	CREATE FUNCTION GetBonus(salary DECIMAL(10,2))
+	RETURNS DECIMAL(10,2)
+	DETERMINISTIC
+	BEGIN
+	   RETURN salary * 0.10;
+	END //
+	DELIMITER ;
+		
+	SELECT name, GetBonus(salary) FROM Employee;
+==============================================================================
+
+                 VIEWS
+============================================================================
+
+A view is a STORED NAMED QUERY
+The view itself acts like a table.
+Views are often useful when frequently you want to use same types of query
+However, a new table is not created in the disk (Permanenet storage)
+*/
+select * from books
+
+-- Example to create a view
+create view mini_book_view1
+as
+	select bookid, bookname, price, booklanguage, category from books
+
+select * from mini_book_view
+
+select SUM(price) as total_price FROM mini_book_view
+
+ALTER VIEW MINI_BOOK_VIEW1
+AS
+	SELECT bookid, bookname, price from books
+
+SELECT dbo.movies.id, dbo.movies.title, dbo.movies.year, dbo.ratings.movie_id, dbo.ratings.rating, 
+
+dbo.ratings.domestic_sales
+FROM     dbo.movies INNER JOIN
+                  dbo.ratings ON dbo.movies.id = dbo.ratings.movie_id
+
+
+To create a View using the UI:
+DB -> views -> Right Click -> "New View"
+	We will get the Query Designer
+	1. Design the Query (select the columns and JOIN if necessary)
+	2. Save Ctrl+S or use the save button from tool bar
+	3. Give a name to the view from the dialogue box
+
+TO RUN A VIEW USING THE UI:
+	DB -> views -> Right Click and "Select top 1000 rows"
+Or 
+In  the Query window (Editor):   select * from <viewName>
+
+===================================================================================
+Triggers
+============================================================================
+A trigger is a stored program executed automatically when a specific event (INSERT, UPDATE, DELETE) occurs on a 
+
+table.
+Key Points:
+
+Useful for enforcing business rules and maintaining data integrity.
+Can be BEFORE or AFTER triggers.
+Associated with a specific table.
+
+Syntax:
+
+	CREATE TRIGGER trigger_name
+	{BEFORE | AFTER} {INSERT | UPDATE | DELETE}
+	ON table_name
+	FOR EACH ROW
+	BEGIN
+	-- trigger logic
+	END;
+	
+Example: 
+    CREATE TRIGGER before_insert_employee
+	BEFORE INSERT ON Employee
+	FOR EACH ROW
+	BEGIN
+	IF NEW.salary IS NULL THEN
+	SET NEW.salary = 30000;
+	END IF;
+	END;
+	
+==============================================================
+Indexes
+
+An index is a database object used to speed up data retrieval. It works like an index in a book, 
+allowing quick searches.
+
+Key Points:
+
+Improves query performance, especially for WHERE, ORDER BY, and JOIN conditions.
+Too many indexes can slow down INSERT, UPDATE, and DELETE operations.
+Types: PRIMARY, UNIQUE, COMPOSITE, FULLTEXT.
+
+Syntax:
+   CREATE INDEX index_name
+   ON table_name(column_name);
+
+Example:
+    CREATE INDEX idx_employee_name
+	ON Employee(name);
+
+	-- Drop index
+	DROP INDEX idx_employee_name ON Employee;
+	
+========================================================================
+============================================
+ SQL JOINS 
+============================================================================
+
+
+A JOIN is used to combine rows from two or more tables based on a related column between them.
+
+Types of Joins in MySQL:
+
+1. INNER JOIN
+
+Returns only the rows that have matching values in both tables.
+Syntax:
+	SELECT columns
+	FROM table1
+	INNER JOIN table2
+	ON table1.common_column = table2.common_column;
+	
+Example:
+	SELECT e.name, d.dept_name
+	FROM Employee e
+	INNER JOIN Department d
+	ON e.dept_id = d.dept_id;
+=============================================================
+SQL JOINS EXAMPLES 
+============================================================================
+
+============================================
+============================================================================
+
+============================================
+1.Find employees and their managers
+
+Problem: You are given an Employees table where each employee may have a manager (also in the same table).
+Write a query to list employees along with their manager’s name.
+
+Table: Employees
+
+EmpID	EmpName	ManagerID
+1	    Aakash	 3
+2	    Bhaskar	     3
+3	    Chitra	 NULL
+4	    Dinesh	 1
+
+
+SELECT e.EmpName AS Employee, m.EmpName AS Manager
+FROM Employees e
+LEFT JOIN Employees m ON e.ManagerID = m.EmpID;
+============================================================================
+
+======================================================
+2.Find pairs of employees from the same manager
+Problem: Show all employee pairs who work under the same manager.
+
+
+Table: Employees
+
+EmpID	EmpName	ManagerID
+1	    Aakash	 3
+2	    Bhaskar	     3
+3	    Chitra	 NULL
+4	    Dinesh	 1
+
+SELECT e1.EmpName AS Employee1, e2.EmpName AS Employee2, m.EmpName AS Manager
+FROM Employees e1
+JOIN Employees e2 ON e1.ManagerID = e2.ManagerID AND e1.EmpID < e2.EmpID
+JOIN Employees m ON e1.ManagerID = m.EmpID;
+============================================================================
+
+======================================================
+
+3.Find employees who joined the same year
+Problem: Each employee has a join year. Show employee pairs who joined the same year.
+
+Table: Employees
+
+EmpID	EmpName	JoinYear
+1	    Aakash	2020
+2	    Bhaskar	    2021
+3	    Chitra	2020
+4	    Dinesh	2021
+
+SELECT e1.EmpName AS Employee1, e2.EmpName AS Employee2, e1.JoinYear
+FROM Employees e1
+JOIN Employees e2 ON e1.JoinYear = e2.JoinYear AND e1.EmpID < e2.EmpID;
+
+============================================================================
+
+======================================================
+
+4.Find customers and the products they purchased
+Problem: Show all customers who made a purchase along with the product name.
+
+Customers Table                            
+
+CustomerID	CustomerName                   
+1	         Aakash
+2	         Bhaskar
+3	         Chitra
+
+Orders Table
+OrderID	CustomerID	ProductID
+101	        1	     201
+102     	2	     202
+103      	1	     203
+
+Products Table
+
+ProductID	ProductName
+201	         Laptop
+202	         Phone
+203	         Tablet
+
+SELECT c.CustomerName, p.ProductName
+FROM Customers c
+INNER JOIN Orders o ON c.CustomerID = o.CustomerID
+INNER JOIN Products p ON o.ProductID = p.ProductID;
+============================================================================
+
+======================================================
+
+5.Find all employees and their assigned projects (if any)
+Problem: Show all employees, even if they are not assigned to any project.
+
+Employees Table
+
+EmpID	EmpName
+1	    Aakash
+2	    Bhaskar
+3	    Chitra
+
+Projects Table
+
+ProjectID	EmpID	ProjectName
+501	         1	     AI System
+502	         2	     Web App
+
+SELECT e.EmpName, p.ProjectName
+FROM Employees e
+LEFT JOIN Projects p ON e.EmpID = p.EmpID;
+============================================================================
+
+======================================================
+
+6.Show all courses and the students enrolled (if any)
+Problem: Display all courses, even if no student has enrolled.
+
+Students Table
+
+StudentID	StudentName
+  1	        Aakash
+  2	        Bhaskar
+
+Enrollments Table
+
+StudentID	CourseID
+1	         301
+
+Courses Table
+
+CourseID	CourseName
+301	        SQL
+302	        Python
+
+SELECT c.CourseName, s.StudentName
+FROM Students s
+RIGHT JOIN Enrollments e ON s.StudentID = e.StudentID
+RIGHT JOIN Courses c ON e.CourseID = c.CourseID;
+
+
+7.Find students with their enrolled courses
+Problem: Show all students who have enrolled in a course along with the course name
+
+Students Table
+
+StudentID	StudentName
+1	         Aakash
+2	         Bhaskar
+3	         Chitra
+
+
+Courses Table
+
+CourseID	CourseName
+101	        SQL
+102	        Python
+
+Enrollments Table
+
+StudentID	CourseID
+1	         101
+2	         102
+
+SELECT s.StudentName, c.CourseName
+FROM Students s
+INNER JOIN Enrollments e ON s.StudentID = e.StudentID
+INNER JOIN Courses c ON e.CourseID = c.CourseID;
+
+
+8.List all employees and their assigned projects
+Problem: Show all employees even if they don’t have any project.
+
+Employees Table
+
+EmpID	EmpName
+1	    Aakash
+2	    Bhaskar
+3	    Chitra
+
+Projects Table
+
+ProjectID	EmpID	ProjectName
+201	         1	     AI App
+202	         2	     Web App
+
+SELECT e.EmpName, p.ProjectName
+FROM Employees e
+LEFT JOIN Projects p ON e.EmpID = p.EmpID;
+
+9.Show all products and customers who ordered them
+Problem: Display all products, even if no customer has ordered them.
+
+Customers Table
+
+CustID	CustName
+1	     Aakash
+2	     Bhaskar
+
+Orders Table
+
+OrderID	CustID	ProductID
+301	      1	      501
+
+Products Table
+
+ProductID	ProductName
+501	         Laptop
+502	         Tablet
+
+SELECT p.ProductName, c.CustName
+FROM Customers c
+RIGHT JOIN Orders o ON c.CustID = o.CustID
+RIGHT JOIN Products p ON o.ProductID = p.ProductID;
+
+
+10.Find employees working in the same department
+Problem: Show employee pairs who are in the same department.
+
+Employees Table
+
+EmpID	EmpName	DeptID
+1	    Aakash	 10
+2	    Bhaskar	     10
+3	   Chitra	 20
+4	    Dinesh	 20
+
+SELECT e1.EmpName AS Employee1, e2.EmpName AS Employee2, e1.DeptID
+FROM Employees e1
+JOIN Employees e2 ON e1.DeptID = e2.DeptID AND e1.EmpID < e2.EmpID;
+
+
