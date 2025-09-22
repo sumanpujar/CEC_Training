@@ -1,0 +1,101 @@
+What is the difference between Git and GitHub?
+Git is a distributed version control system (DVCS) that tracks changes in source code during software development. It enables multiple developers to collaborate on the same project by managing different versions of the code, allowing for branching, merging, and reverting to previous states. 
+Git is installed and runs locally on your computer.
+GitHub is a web-based hosting service for Git repositories. It provides a platform to store, manage, and collaborate on Git projects in a centralized, cloud-based environment. 
+While Git is the underlying technology for version control, 
+GitHub adds a graphical user interface and features like issue tracking, pull requests, code review tools, and project management functionalities to enhance collaboration among developers. 
+In summary, Git is the tool for version control, while GitHub is a platform that hosts Git repositories and provides additional features for collaborative development. 
+You can use Git without GitHub, but you cannot use GitHub without Git. 
+We need install local git on windows / Mac 
+Installing Git on Windows is necessary if local interaction with Git repositories is required. This includes tasks such as:
+•	Cloning repositories: Downloading a copy of a remote Git repository to the local machine.
+•	Creating and editing files locally: Working on project files and tracking changes using Git.
+•	Committing changes: Saving snapshots of the project's state with descriptive messages.
+•	Branching and merging: Managing different lines of development and integrating changes.
+•	Pushing and pulling changes: Synchronizing local changes with remote repositories and retrieving updates from them.
+While online platforms like GitHub allow for some Git-related actions directly in the browser (e.g., browsing content, basic editing), full functionality and local development workflows necessitate a local Git installation.
+Git for Windows is the recommended installer for Windows users, providing Git Bash (a command-line environment), Git GUI, and integration with the Windows command prompt or PowerShell. Alternatively, Git can be used within the Windows Subsystem for Linux (WSL) if a Linux environment is preferred.
+=============================================
+What is a Git Repository?
+A Git repository (repo) is a directory (folder) that tracks your project files and their history using Git. It allows you to:
+•	Track changes
+•	Revert to previous versions
+•	Collaborate with others
+Repos can be local (on your computer) or remote (e.g., GitHub, GitLab, Bitbucket).
+________________________________________
+ Creating a Git Repository
+1. Create a new project folder
+mkdir my-project
+cd my-project
+2. Initialize Git inside the folder
+git init
+This creates a hidden folder .git/ which stores all version history.
+Output Example:
+Initialized empty Git repository in C:/Users/you/my-project/.git/
+________________________________________
+ Basic Git Workflow & Commands
+1. Check repository status
+git status
+ Shows untracked, modified, or staged files.
+________________________________________
+2. Add a file
+echo "Hello Git" > readme.txt
+git add readme.txt
+ Stages the file for commit. (You can also run git add . to add all files.)
+________________________________________
+3. Commit the file
+git commit -m "Added readme.txt"
+ Saves the snapshot with a message.
+________________________________________
+4. View commit history
+git log
+ Shows all commits (author, date, commit ID).
+________________________________________
+5. Connect to a remote repository (e.g., GitHub)
+First, create a repo on GitHub (without README if you already have one).
+Then run:
+git remote add origin https://github.com/username/my-project.git
+________________________________________
+6. Push changes to remote
+git push -u origin main
+Sends your commits to GitHub.
+(Use master if that’s your default branch.)
+________________________________________
+7. Clone an existing repository
+git clone https://github.com/username/my-project.git
+ Copies the repo from GitHub to your local system.
+===========================================
+8. Create a new branch
+git branch feature-login
+git checkout feature-login
+Creates and switches to a new branch.
+(Shortcut: git checkout -b feature-login)
+________________________________________
+9. Merge a branch into main
+git checkout main
+git merge feature-login
+👉 Combines changes from the branch into main.
+________________________________________
+10. Pull latest changes from remote
+git pull origin main
+👉 Updates your local repo with changes from GitHub.
+--------------------------------------------
+GitHub no longer allows password authentication for Git operations (since Aug 2021). Instead, you must use a Personal Access Token (PAT) or SSH keys.
+Option 1: Use Personal Access Token (Recommended for HTTPS)
+1.	Generate a Token
+o	Go to GitHub → Settings → Developer settings → Personal access tokens.
+o	Select Tokens (classic) → Generate new token.
+o	Choose:
+	Expiration: (set as per your preference, e.g., 90 days or "No expiration")
+	Scopes: at least repo and workflow.
+o	Copy the generated token (you’ll need it as your "password").
+2.	Update Git Credentials
+o	In your repo folder, run:
+o	git remote set-url origin https://<USERNAME>@github.com/sumanpujar/CEC_Training.git
+Replace <USERNAME> with your GitHub username.
+o	When prompted for a password during git push or git pull, paste your token instead of your GitHub password.
+3.	(Optional) Store Credentials
+o	To avoid retyping token every time:
+o	git config --global credential.helper store
+o	Then push once with your token, and Git will remember it.
+=============================================
