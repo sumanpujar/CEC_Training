@@ -432,6 +432,93 @@ In the output, under key, you should see idx_employee_name.)
     
 5>Drop index
 	DROP INDEX idx_employee_name ON employee;
+======================================================================
+SQL CURSOR:
+========================================================================
+What is a Cursor?
+A cursor in MySQL is used inside a stored procedure to iterate row by row over a result set and perform operations on each row.
+
+1. Employee Table Setup
+	Let’s use the same table as before:
+
+	DROP TABLE IF EXISTS Employee;
+
+	CREATE TABLE employee (
+	    id INT AUTO_INCREMENT PRIMARY KEY,
+	    name VARCHAR(100) NOT NULL,
+	    salary DECIMAL(10,2)
+	);
+
+2. select * from employee;
+
+3. Cursor Example
+
+We’ll create a stored procedure that:
+Uses a cursor to fetch each employee row.
+Prints employee names and salaries using SELECT.
+
+4. 
+DELIMITER $$
+CREATE PROCEDURE show_employees()
+BEGIN
+    -- Declare variables to hold data
+    DECLARE done INT DEFAULT 0;
+    DECLARE emp_name VARCHAR(100);
+    DECLARE emp_salary DECIMAL(10,2);
+
+    -- Declare cursor
+    DECLARE emp_cursor CURSOR FOR
+        SELECT name, salary FROM Employee;
+
+    -- Declare handler for end of cursor
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Open cursor
+    OPEN emp_cursor;
+
+    -- Loop through rows
+    read_loop: LOOP
+        FETCH emp_cursor INTO emp_name, emp_salary;
+        IF done = 1 THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Do something with the data (here we just select it)
+        SELECT emp_name AS Employee, emp_salary AS Salary;
+    END LOOP;
+
+    -- Close cursor
+    CLOSE emp_cursor;
+END$$
+DELIMITER ;
+
+4. Run the Procedure
+CALL show_employees();
+
+5. Expected Output
+We will see multiple small result sets, one for each employee:
++----------+---------+
+| Employee | Salary  |
++----------+---------+
+| Krishna    | 50000.0 |
++----------+---------+
+
+| shyam      | 40000.0 |
+| ram  		| 60000.0 |
+| bhaskar    | 55000.0 |
+| Aakash      | 45000.0 |
+
+----------------------------------------
+Key Points
+----------
+DECLARE CURSOR → defines the cursor query.
+OPEN cursor → starts reading results.
+FETCH INTO → gets one row at a time.
+HANDLER FOR NOT FOUND → tells MySQL what to do when no more rows (here we set done = 1).
+LOOP … LEAVE → iterates until no rows left.
+CLOSE cursor → releases it.
+
+
 
 
 ========================================================================
