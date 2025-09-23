@@ -286,48 +286,46 @@ Syntax:
 		
 	SELECT name, GetBonus(salary) FROM Employee;
 ==============================================================================
-
                  VIEWS
 ============================================================================
-
 A view is a STORED NAMED QUERY
 The view itself acts like a table.
 Views are often useful when frequently you want to use same types of query
 However, a new table is not created in the disk (Permanenet storage)
-*/
-select * from books
+----------------------------------------------
+1> Create books table
+	CREATE TABLE books (
+	    bookid INT AUTO_INCREMENT PRIMARY KEY,
+	    bookname VARCHAR(200) NOT NULL,
+	    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+	    booklanguage VARCHAR(50) NOT NULL,
+	    category VARCHAR(100) NOT NULL
+	);
 
--- Example to create a view
-create view mini_book_view1
-as
-	select bookid, bookname, price, booklanguage, category from books
+2> Insert sample data
+	INSERT INTO books (bookname, price, booklanguage, category) VALUES
+	('The Great Gatsby', 350.00, 'English', 'Fiction'),
+	('Don Quixote', 500.00, 'Spanish', 'Classic'),
+	('War and Peace', 600.00, 'Russian', 'Historical'),
+	('The Alchemist', 250.00, 'Kannada', 'Philosophy'),
+	('Wings of Fire', 300.00, 'English', 'Biography');
 
-select * from mini_book_view
+3> select * from books;
 
-select SUM(price) as total_price FROM mini_book_view
+4> Create view
+	CREATE VIEW mini_book_view AS
+	SELECT bookid, bookname, price, booklanguage, category
+	FROM books;
 
-ALTER VIEW MINI_BOOK_VIEW1
-AS
-	SELECT bookid, bookname, price from books
+5> Test: Select all from view
+	SELECT * FROM mini_book_view;
 
-SELECT dbo.movies.id, dbo.movies.title, dbo.movies.year, dbo.ratings.movie_id, dbo.ratings.rating, 
-
-dbo.ratings.domestic_sales
-FROM     dbo.movies INNER JOIN
-                  dbo.ratings ON dbo.movies.id = dbo.ratings.movie_id
+6> Test: Total price of all books
+	SELECT SUM(price) AS total_price FROM mini_book_view;
 
 
-To create a View using the UI:
-DB -> views -> Right Click -> "New View"
-	We will get the Query Designer
-	1. Design the Query (select the columns and JOIN if necessary)
-	2. Save Ctrl+S or use the save button from tool bar
-	3. Give a name to the view from the dialogue box
 
-TO RUN A VIEW USING THE UI:
-	DB -> views -> Right Click and "Select top 1000 rows"
-Or 
-In  the Query window (Editor):   select * from <viewName>
+
 
 ===================================================================================
 Triggers
@@ -350,16 +348,54 @@ Syntax:
 	BEGIN
 	-- trigger logic
 	END;
-	
+------------------
+-- Drop table if exists
+DROP TABLE IF EXISTS employee;
+
+-- Create Employee table
+CREATE TABLE employee (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    salary DECIMAL(10,2)
+);
+
+------------------
+Trigger Creation SQL
+
+Your trigger sets a default salary = 30000 if the salary is not given.
+
+-- Drop trigger if already exists
+DROP TRIGGER IF EXISTS before_insert_employee;
+
+-- Create trigger
 Example: 
-    CREATE TRIGGER before_insert_employee
-	BEFORE INSERT ON Employee
-	FOR EACH ROW
-	BEGIN
-	IF NEW.salary IS NULL THEN
-	SET NEW.salary = 30000;
-	END IF;
-	END;
+DELIMITER $$
+CREATE TRIGGER before_insert_employee
+BEFORE INSERT ON employee
+FOR EACH ROW
+BEGIN
+    IF NEW.salary IS NULL THEN
+        SET NEW.salary = 30000;
+    END IF;
+END$$
+DELIMITER ;
+----------------------
+select * from employee;
+Insert Sample Data
+-- Insert with salary provided
+
+INSERT INTO employee (emp_id,name, dept_id, salary) VALUES (4,'Raghu',2, 50000);
+
+-- Insert without salary (trigger should set salary = 30000)
+INSERT INTO employee (name) VALUES ('Ram');
+
+-- Insert with NULL salary (trigger should set salary = 30000)
+INSERT INTO employee (emp_id,name, salary) VALUES (6,'Chandra', NULL);
+
+-- Verify
+SELECT * FROM employee;
+
+  
 	
 ==============================================================
 Indexes
@@ -378,17 +414,29 @@ Syntax:
    ON table_name(column_name);
 
 Example:
-    CREATE INDEX idx_employee_name
-	ON Employee(name);
+1> Create Index
+This creates an index on the name column to make lookups by name faster.
 
-	-- Drop index
-	DROP INDEX idx_employee_name ON Employee;
-	
+CREATE INDEX idx_employee_name
+ON Employee(name);
+---------------
+2>Test Index Usage
+Run a query that benefits from the index:
+Find employee by name
+SELECT * FROM employee WHERE name = 'Ram';
+
+4> Check if index is used
+EXPLAIN SELECT * FROM Employee WHERE name = 'Ram';
+(The EXPLAIN command shows if MySQL is using the idx_employee_name index.
+In the output, under key, you should see idx_employee_name.)
+    
+5>Drop index
+	DROP INDEX idx_employee_name ON employee;
+
+
 ========================================================================
-============================================
  SQL JOINS 
 ============================================================================
-
 
 A JOIN is used to combine rows from two or more tables based on a related column between them.
 
@@ -405,8 +453,8 @@ Syntax:
 	
 Example:
 	SELECT e.name, d.dept_name
-	FROM Employee e
-	INNER JOIN Department d
+	FROM employee e
+	INNER JOIN department d
 	ON e.dept_id = d.dept_id;
 =============================================================
 SQL JOINS EXAMPLES 
