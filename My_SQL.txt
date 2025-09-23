@@ -40,7 +40,7 @@ Examples: CREATE, ALTER, DROP, TRUNCATE
 	  TRUNCATE TABLE Employee;
 --------------------------------------------------
 
-DML (Data Manipulation Language) :Used for manipulating data.
+2> DML (Data Manipulation Language) :Used for manipulating data.
 
 Examples: INSERT, UPDATE, DELETE, SELECT
 
@@ -67,8 +67,169 @@ CREATE TABLE Department (
 	   dept_id INT,
 	   FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
 	);
-------------------------------------------------------------------
+--------------------------------------------------
+3> TCL (Transaction Control Language) Commands
 
+TCL manages transactions in SQL. A transaction is a group of operations that are executed together.
+Common TCL commands:
+START TRANSACTION / BEGIN → begins a transaction.
+COMMIT → saves all changes permanently.
+ROLLBACK → undoes changes since the last COMMIT.
+SAVEPOINT → creates a checkpoint to rollback partially.
+
+Example:
+-- Create Employee table
+DROP TABLE IF EXISTS Employee;
+CREATE TABLE Employee (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    salary DECIMAL(10,2)
+);
+
+INSERT INTO Employee (name, salary) VALUES
+('krishna', 50000),
+('Shyam', 40000),
+('chandra', 60000);
+----------------------
+
+-- Start a transaction
+SET SQL_SAFE_UPDATES = 0;
+START TRANSACTION;
+-- Transfer 500 from Alice to Bob
+UPDATE employee SET salary = salary - 500 WHERE name = 'krishna';
+UPDATE employee SET salary = salary + 500 WHERE name = 'Shyam';
+-- Check before commit
+SELECT * FROM employee;
+-- If correct:
+COMMIT;
+SET SQL_SAFE_UPDATES = 1;
+------------------------------
+Explanation:
+krishna’s salary decreased by 500 → 50000 → 49500
+Shyam’s salary increased by 500 → 40000 → 40500
+ Explanation: Either both updates succeed (money moved from Alice to Bob), or both are canceled (rollback).
+=================================================================
+4> DRL (Data Retrieval Language) Commands
+
+DRL is basically the SELECT statement — used to retrieve data.
+
+Example:
+-- Select all employees
+SELECT * FROM Employee;
+
+-- Select only specific columns
+SELECT name, salary FROM Employee;
+
+-- Use WHERE condition
+SELECT * FROM Employee WHERE salary > 45000;
+
+
+ Explanation: DRL lets you fetch data in many ways (filter, sort, group).
+
+------------------------------------------------------------------
+==========================================================================
+ String Functions in MySQL
+
+String functions help manipulate, search, and transform text.
+Common String Functions:
+Function	Description	Example
+CONCAT()	Concatenates strings	SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM Employee;
+UPPER()	Converts string to uppercase	SELECT UPPER(name) FROM Employee;
+LOWER()	Converts string to lowercase	SELECT LOWER(name) FROM Employee;
+LENGTH()	Returns number of characters	SELECT LENGTH(name) FROM Employee;
+SUBSTRING()	Extracts substring	SELECT SUBSTRING(name,1,3) FROM Employee;
+REPLACE()	Replaces text	SELECT REPLACE(name,'Alice','Alicia') FROM Employee;
+TRIM()	Removes leading/trailing spaces	SELECT TRIM(' Alice ');
+LEFT() / RIGHT()	Leftmost/rightmost characters	SELECT LEFT(name,2), RIGHT(name,2) FROM Employee;
+LOCATE() / INSTR()	Finds position of substring	SELECT LOCATE('a', name) FROM Employee;
+--------------------------------------------------------------------
+Example Table
+DROP TABLE IF EXISTS Employee;
+CREATE TABLE Employee (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    salary DECIMAL(10,2)
+);
+
+INSERT INTO Employee (name, salary) VALUES
+('krishna', 50000),
+('bheem', 40000),
+('chandra', 60000);
+
+Example Queries
+-- Concatenate 'Employee: ' with name
+SELECT CONCAT('employee: ', name) AS emp_label FROM employee;
+
+-- Uppercase names
+SELECT UPPER(name) FROM Employee;
+
+-- Extract first 3 letters
+SELECT SUBSTRING(name,1,3) AS short_name FROM Employee;
+
+-- Replace 'Alice' with 'Alicia'
+SELECT REPLACE(name,'Alice','Alicia') FROM Employee;
+
+
+✅ Explanation: These functions let you transform, clean, or search string data easily.
+
+🔹 2. Date/Time Functions in MySQL
+
+Date functions allow manipulation, formatting, and calculation on date/time columns.
+
+Common Date Functions:
+Function	Description	Example
+NOW()	Current date and time	SELECT NOW();
+CURDATE()	Current date	SELECT CURDATE();
+CURTIME()	Current time	SELECT CURTIME();
+DATE()	Extract date from datetime	SELECT DATE(NOW());
+YEAR(), MONTH(), DAY()	Extract year/month/day	SELECT YEAR(NOW()), MONTH(NOW()), DAY(NOW());
+DATEDIFF()	Difference between dates in days	SELECT DATEDIFF('2025-09-30','2025-09-23');
+ADDDATE() / DATE_ADD()	Add days or intervals	SELECT DATE_ADD(CURDATE(), INTERVAL 7 DAY);
+SUBDATE() / DATE_SUB()	Subtract days or intervals	SELECT DATE_SUB(CURDATE(), INTERVAL 3 DAY);
+STR_TO_DATE()	Convert string to date	SELECT STR_TO_DATE('23-09-2025','%d-%m-%Y');
+DATE_FORMAT()	Format date as string	SELECT DATE_FORMAT(NOW(), '%d/%m/%Y');
+Example Table with Dates
+DROP TABLE IF EXISTS Orders;
+CREATE TABLE Orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(100),
+    order_date DATE,
+    delivery_date DATE
+);
+
+INSERT INTO Orders (customer_name, order_date, delivery_date) VALUES
+('krishna', '2025-09-20', '2025-09-25'),
+('shyam', '2025-09-22', '2025-09-27'),
+('chandra', '2025-09-23', '2025-09-30');
+
+Example Queries
+-- Current date and time
+SELECT NOW(), CURDATE(), CURTIME();
+
+-- Days between order and delivery
+SELECT customer_name, DATEDIFF(delivery_date, order_date) AS days_to_delivery
+FROM Orders;
+
+-- Add 3 days to order_date
+SELECT customer_name, DATE_ADD(order_date, INTERVAL 3 DAY) AS new_date
+FROM Orders;
+
+-- Format delivery_date
+SELECT customer_name, DATE_FORMAT(delivery_date, '%d-%m-%Y') AS formatted_date
+FROM Orders;
+
+
+Explanation:
+
+DATEDIFF() helps calculate durations.
+
+DATE_ADD() / DATE_SUB() are useful for planning future/past dates.
+
+DATE_FORMAT() customizes the date display for reports.
+
+
+
+==========================================================================
 NORMALIZATION:
 
 It is a way/tool to improve and validate the logical design of a DB.
@@ -517,7 +678,15 @@ FETCH INTO → gets one row at a time.
 HANDLER FOR NOT FOUND → tells MySQL what to do when no more rows (here we set done = 1).
 LOOP … LEAVE → iterates until no rows left.
 CLOSE cursor → releases it.
+--------------------------------------------------------------
 
+Group by department
+	SELECT d.dept_name, AVG(e.salary) AS avg_salary, COUNT(*) AS total_employees
+	FROM Employee e
+	JOIN Department d ON e.dept_id = d.dept_id
+	GROUP BY d.dept_name;
+---------------------------------
+Explanation: GROUP BY dept_name combines employees by department and shows average salary and headcount.
 
 
 
