@@ -169,15 +169,13 @@ Stored procedures are named routines stored in the database server that encapsul
 Useful for complex operations, reducing client-server round-trips.
 
 Benefits
-
 Encapsulate business logic close to data.
 Reduce network overhead.
 Can use variables, flow control, cursors, handlers.
-
 Syntax:
 
 	DELIMITER //
-	CREATE PROCEDURE GetEmployee(IN dept VARCHAR(50))
+	CREATE PROCEDURE GetEmployee(IN dept Integer)
 	BEGIN
 	   SELECT * FROM Employee WHERE dept_id = dept;
 	END //
@@ -198,11 +196,9 @@ Call Procedure:
 	END $$
 
 	DELIMITER ;
- 
- 
+  
     CALL GetCustomersByCity('Mumbai');
-	
-	
+		
 2.Given CustomerID, return how many orders they placed.
 
 	DELIMITER $$
