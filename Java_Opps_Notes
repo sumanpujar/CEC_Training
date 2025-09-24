@@ -253,3 +253,85 @@ public class TestInterface {
         d.draw();
     }
 }
+
+===============================================================
+8. ArrayList
+
+Dynamic array (resizable) from java.util package.
+
+import java.util.ArrayList;
+
+public class TestArrayList {
+    public static void main(String[] args) {
+        ArrayList<String> list = new ArrayList<>();
+        list.add("Aakash");
+        list.add("Bheem");
+        list.add("Chadra");
+        System.out.println(list);
+    }
+}
+
+ Output: [Aakash, Bheem, Chadra]
+========================================== 
+
+9. Map
+
+Key-value pairs, e.g., HashMap
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class TestMap {
+    public static void main(String[] args) {
+        Map<Integer, String> map = new HashMap<>();
+        map.put(1, "Aakash");
+        map.put(2, "Bheem");
+        map.put(3, "Chandra");
+
+        for (Map.Entry<Integer, String> entry : map.entrySet()) {
+            System.out.println(entry.getKey() + " -> " + entry.getValue());
+        }
+    }
+}
+
+==========================================
+10. Stream API
+
+Process collections functionally.
+
+import java.util.*;
+import java.util.stream.*;
+
+public class TestStream {
+    public static void main(String[] args) {
+        List<String> names = Arrays.asList("Aakash","Bheem","Chandra");
+        
+        // Filter names starting with 'A'
+        List<String> result = names.stream()
+                                   .filter(n -> n.startsWith("A"))
+                                   .collect(Collectors.toList());
+        System.out.println(result);
+    }
+}
+
+
+Output: [Aakash]
+
+================================================
+
+11. Optional -Null-safe container
+
+Handles null values safely.
+
+import java.util.Optional;
+
+public class TestOptional {
+    public static void main(String[] args) {
+        Optional<String> name = Optional.ofNullable(null);
+
+        System.out.println(name.orElse("Default Name"));  // prints Default Name
+    }
+}
+=======================================================
+
+
