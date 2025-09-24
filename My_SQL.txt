@@ -582,12 +582,13 @@ CREATE INDEX idx_employee_name
 ON Employee(name);
 ---------------
 2>Test Index Usage
-Run a query that benefits from the index:
-Find employee by name
+Run a query that benefits from the index: Find employee by name
+
 SELECT * FROM employee WHERE name = 'Ram';
 
 4> Check if index is used
 EXPLAIN SELECT * FROM Employee WHERE name = 'Ram';
+
 (The EXPLAIN command shows if MySQL is using the idx_employee_name index.
 In the output, under key, you should see idx_employee_name.)
     
@@ -645,7 +646,8 @@ BEGIN
         END IF;
 
         -- Do something with the data (here we just select it)
-        SELECT emp_name AS Employee, emp_salary AS Salary;
+        
+		SELECT emp_name AS Employee, emp_salary AS Salary;
     END LOOP;
 
     -- Close cursor
