@@ -1,1 +1,255 @@
 
+Core Java Notes with Examples
+==========================================
+
+1. Introduction to Java
+
+Java is Object-Oriented, Platform-Independent, Strongly Typed programming language.
+
+Runs on JVM (Java Virtual Machine), making it portable.
+
+Example Program: Hello World
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+
+
+Output: Hello, World!
+
+--------------------------------------------
+1> What is a class (Entity / Model / Real life Object)
+
+=============================================
+
+
+2. OOP Concepts
+OOP (Object-Oriented Programming)
+
+Encapsulation: Hide data using private fields + getters/setters.
+
+Inheritance: Reuse code from parent class.
+
+Polymorphism: Same method, different behavior.
+
+Abstraction: Hide implementation details.
+====================================================
+
+Constructors
+
+Special method to initialize objects.
+
+class Person {
+    String name;
+    int age;
+
+    // Constructor
+    Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        Person p = new Person("Krishna", 25);
+        System.out.println(p.name + " -> " + p.age);
+    }
+}
+
+Output: Krishna -> 25
+
+====================================================
+POJO Class
+
+Plain Old Java Object
+
+Simple class with fields, getters, setters
+
+class Employee {
+    private int id;
+    private String name;
+
+    // Getter & Setter
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+}
+
+======================================================
+3. Access Specifiers
+
+Specifier	Access Level
+============================
+private		Class only
+default 	(no modifier)	Same package
+protected	Same package + subclasses (Accessible only inside 
+							the same package (not in subclasses outside package).
+public		Everywhere
+==============================
+Example:
+
+class Test {
+    private int privateVar = 10;
+    public int publicVar = 20;
+}
+---------------------------------------
+Java program that clearly demonstrates public, private, protected, and default (package-private) access specifiers.
+// File: AccessSpecifiersDemo.java
+
+class BaseClass {
+    public String publicVar = "I am PUBLIC";        // accessible everywhere
+    private String privateVar = "I am PRIVATE";     // accessible only in this class
+    protected String protectedVar = "I am PROTECTED"; // accessible in same package & subclasses
+    String defaultVar = "I am DEFAULT";             // package-private (no modifier)
+
+    public void showAccess() {
+        System.out.println("\n--- Inside BaseClass ---");
+        System.out.println(publicVar);     //  accessible
+        System.out.println(privateVar);    //  accessible
+        System.out.println(protectedVar);  //  accessible
+        System.out.println(defaultVar);    //  accessible
+    }
+}
+
+class SubClass extends BaseClass {
+    public void showAccessFromSubclass() {
+        System.out.println("\n--- Inside SubClass (extends BaseClass) ---");
+        System.out.println(publicVar);     // accessible
+        // System.out.println(privateVar); //  private not accessible
+        System.out.println(protectedVar);  //  accessible via inheritance
+        System.out.println(defaultVar);    //  accessible (same package)
+    }
+}
+
+public class AccessSpecifiersDemo {
+    public static void main(String[] args) {
+        BaseClass base = new BaseClass();
+        SubClass sub = new SubClass();
+
+        // Inside BaseClass method
+        base.showAccess();
+
+        // Inside SubClass method
+        sub.showAccessFromSubclass();
+
+        System.out.println("\n--- From main() ---");
+        System.out.println(base.publicVar);      //  accessible
+        // System.out.println(base.privateVar);  //  ERROR: private
+        System.out.println(base.protectedVar);   //  accessible (same package)
+        System.out.println(base.defaultVar);     //  accessible (same package)
+    }
+}
+
+--------------------
+Output:
+--- Inside BaseClass ---
+I am PUBLIC
+I am PRIVATE
+I am PROTECTED
+I am DEFAULT
+
+--- Inside SubClass (extends BaseClass) ---
+I am PUBLIC
+I am PROTECTED
+I am DEFAULT
+
+--- From main() ---
+I am PUBLIC
+I am PROTECTED
+I am DEFAULT
+
+
+
+
+
+==============================================
+4. Packages
+
+Used to organize classes.
+
+Example: package com.example;
+
+package com.example;
+
+public class MyClass {
+    public void display() {
+        System.out.println("Inside package example");
+    }
+}
+================================================
+
+5. Inheritance & this Keyword
+class Animal {
+    void eat() { System.out.println("Animal eats"); }
+}
+
+class Dog extends Animal {
+    void bark() { System.out.println("Dog barks"); }
+}
+
+public class TestInheritance {
+    public static void main(String[] args) {
+        Dog d = new Dog();
+        d.eat();  // inherited
+        d.bark();
+    }
+}
+
+=================================================
+this Keyword
+
+Refers to current object, used to avoid ambiguity in constructors:
+
+class Person {
+    String name;
+    Person(String name) {
+        this.name = name;  // refers to instance variable
+    }
+}
+================================================
+
+6. Static Members
+
+Shared by all instances of a class.
+
+class Counter {
+    static int count = 0;
+
+    Counter() {
+        count++;
+    }
+}
+
+public class TestStatic {
+    public static void main(String[] args) {
+        new Counter();
+        new Counter();
+        System.out.println(Counter.count);  
+    }
+}
+==============================================
+
+7. Interfaces
+
+Abstract types with abstract methods.
+
+Classes implement interfaces.
+
+interface Drawable {
+    void draw();
+}
+
+class Circle implements Drawable {
+    public void draw() { System.out.println("Drawing Circle"); }
+}
+
+public class TestInterface {
+    public static void main(String[] args) {
+        Drawable d = new Circle();
+        d.draw();
+    }
+}
