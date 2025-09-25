@@ -257,7 +257,7 @@ public class TestInterface {
 ===============================================================
 8. ArrayList
 
-Dynamic array (resizable) from java.util package.
+It is Dynamic array (resizable) from java.util package.
 
 import java.util.ArrayList;
 
@@ -272,7 +272,52 @@ public class TestArrayList {
 }
 
  Output: [Aakash, Bheem, Chadra]
-========================================== 
+----------------------------------------
+Explanation:
+>ArrayList is a resizable array (dynamic array) in Java. Unlike normal arrays, its size grows/shrinks automatically.
+
+ArrayList<String> list = new ArrayList<>();
+>Creates an ArrayList object that will store String values.
+  <String> means it is a generic collection that can only hold String elements (type-safety).
+  new ArrayList<>() → creates a new empty dynamic list.
+
+list.add("Aakash");
+list.add("Bheem");
+list.add("Chadra");
+
+>add() method inserts elements into the ArrayList.
+>After these lines, the list looks like:
+["Aakash", "Bheem", "Chadra"]
+
+System.out.println(list);
+>By default, printing an ArrayList calls its toString() method.
+This returns a string representation of all elements inside square brackets.
+--------------------------------------------------------------------------
+Key Points about ArrayList
+--------------------------
+Dynamic Size → No need to specify size like arrays.
+Order Preserved → Elements are stored in insertion order.
+Allows Duplicates → Same element can appear multiple times.
+Methods Available:
+add(element) → adds element
+get(index) → retrieves element
+remove(index) → removes element
+size() → returns number of elements
+
+-----------------------------------------------
+Example with More Operations
+ArrayList<String> list = new ArrayList<>();
+list.add("Krishna");
+list.add("Arjun");
+list.add("Bheem");
+
+System.out.println("List: " + list);          // [Krishna, Arjun, Bheem]
+System.out.println("First element: " + list.get(0)); // Krishna
+list.remove(1);                               // removes "Arjun"
+System.out.println("After removal: " + list); // [Krishna, Bheem]
+System.out.println("Size: " + list.size());   // 2
+
+=================================================================== 
 
 9. Map
 
@@ -293,6 +338,60 @@ public class TestMap {
         }
     }
 }
+--------------------------------------------
+Explanation:
+	import java.util.HashMap;
+	import java.util.Map;
+HashMap is a class in Java that implements the Map interface.
+A Map stores key–value pairs (like a dictionary).
+HashMap uses hashing internally for fast access (almost O(1) for put/get operations).
+
+	Map<Integer, String> map = new HashMap<>();
+Declares a variable map of type Map (interface) but initializes it as a HashMap.
+
+	Key Type = Integer, Value Type = String.
+This means:
+Keys must be integers (e.g., 1, 2, 3).
+Values must be strings (e.g., "Aakash", "Bheem").
+
+	map.put(1, "Aakash");
+	map.put(2, "Bheem");
+	map.put(3, "Chandra");
+	put(key, value) inserts a key–value pair into the map.
+
+Now the map looks like:
+
+{1=Aakash, 2=Bheem, 3=Chandra}
+
+for (Map.Entry<Integer, String> entry : map.entrySet()) {
+    System.out.println(entry.getKey() + " -> " + entry.getValue());
+}
+map.entrySet() returns a set of key-value pairs.
+
+for-each loop iterates through each entry.
+entry.getKey() → gives the key (like 1, 2, 3).
+entry.getValue() → gives the value (like "Aakash", "Bheem").
+Prints all key–value pairs.
+
+Output
+
+1 -> Aakash
+2 -> Bheem
+3 -> Chandra
+
+--------------------------------
+Key Points about HashMap:
+
+Stores key–value pairs.
+Keys are unique → If you put() a duplicate key, it replaces the old value.
+
+map.put(2, "Krishna");  // replaces "Bheem" with "Krishna"
+Values can be duplicated → Multiple keys can have the same value.
+
+No guaranteed order → HashMap does not preserve insertion order.
+If you need order, use LinkedHashMap.
+Null allowed: One null key and multiple null values are permitted.
+
 
 ==========================================
 10. Stream API
