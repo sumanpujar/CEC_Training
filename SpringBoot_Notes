@@ -60,3 +60,45 @@ Open:
 http://localhost:8080/hello
 ➡ You’ll see: Hello, Spring Boot!
 ====================================================================
+Numbers.java
+package com.example.demo;
+public class Numbers {
+	private int num1;
+    private int num2;
+
+    // Getters & Setters
+    public int getNum1() { return num1; }
+    public void setNum1(int num1) { this.num1 = num1; }
+
+    public int getNum2() { return num2; }
+    public void setNum2(int num2) { this.num2 = num2; }
+
+}
+-----------------------
+package com.example.demo;
+
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/calc")
+
+public class CalculatorController {
+	// 1Pass numbers as URL parameters
+    // Example: GET http://localhost:8080/api/calc/add?num1=5&num2=10
+    @GetMapping("/add")
+    public int addWithParams(@RequestParam int num1, @RequestParam int num2) {
+        return num1 + num2;
+    }
+
+    // 2.Pass numbers in JSON body
+    // Example: POST http://localhost:8080/api/calc/add
+    // Body: { "num1": 5, "num2": 10 }
+    @PostMapping("/add")
+    public int addWithBody(@RequestBody Numbers numbers) {
+        return numbers.getNum1() + numbers.getNum2();
+    }
+}
+
+
+
+
