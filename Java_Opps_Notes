@@ -415,15 +415,68 @@ public class TestStream {
 
 
 Output: [Aakash]
+----------------------------
+
+Explanation:
+
+List<String> names = Arrays.asList("Aakash","Bheem","Chandra");
+	Creates a fixed-size list of Strings: ["Aakash", "Bheem", "Chandra"].
+	Arrays.asList() is a quick way to create a list from array elements.
+
+
+List<String> result = names.stream() .filter(n -> n.startsWith("A")) .collect(Collectors.toList());
+
+names.stream()
+Converts the List into a Stream (a sequence of elements that supports functional-style operations).
+
+.filter(n -> n.startsWith("A"))
+
+Applies a filter condition:
+
+Keep only names that start with "A".
+
+n -> n.startsWith("A") is a lambda expression (shorthand for a function).
+
+In this case:
+
+"Aakash" ✅ starts with "A" → kept
+
+"Bheem" ❌ doesn’t → removed
+
+"Chandra" ❌ doesn’t → removed
+
+.collect(Collectors.toList())
+
+Collects the filtered elements back into a List.
+
+The result list will now contain only ["Aakash"].
+
+
+System.out.println(result);
+Prints the final filtered list.
+------------------------
+Output
+
+[Aakash]
+
+-----------------------------
+Key Points about Streams :
+
+Stream API → introduced in Java 8 for working with collections in a functional way.
+
+Operations are usually chained (like filter, map, sorted).
+
+Doesn’t modify the original list → instead, it produces a new result.
+
+Can be used for filtering, mapping, reducing, sorting, etc.
 
 ================================================
 
 11. Optional -Null-safe container
 
 Handles null values safely.
-
+---------------------------------------
 import java.util.Optional;
-
 public class TestOptional {
     public static void main(String[] args) {
         Optional<String> name = Optional.ofNullable(null);
@@ -431,6 +484,46 @@ public class TestOptional {
         System.out.println(name.orElse("Default Name"));  // prints Default Name
     }
 }
+-------------------------------------------
+Explantion:
+Optional<String> name = Optional.ofNullable(null);
+
+Optional is a container object introduced in Java 8.
+
+It may or may not hold a value (to avoid NullPointerException).
+
+Here:
+
+Optional.ofNullable(null) → creates an Optional that is empty (because you passed null).
+
+So name does not contain any real value.
+
+2. name.orElse("Default Name")
+
+orElse() → returns the value inside the Optional if present.
+
+If the Optional is empty, it returns the default value you provide.
+
+Here:
+Since name is empty, "Default Name" is returned.
+-------------------------
+Output
+Default Name
+--------------------------------
+
+Key Points about Optional :
+
+Purpose → Avoid NullPointerException by wrapping possibly-null values.
+Creation Methods:
+Optional.of(value) → creates Optional with non-null value.
+Optional.ofNullable(value) → accepts null or non-null.
+Optional.empty() → explicitly creates an empty Optional.
+Access Methods:
+orElse(defaultValue) → return value or default.
+orElseGet(Supplier) → lazy version of orElse.
+orElseThrow() → throw exception if value is absent.
+isPresent() / ifPresent() → check and act if value exists.
+
 =======================================================
 
 
