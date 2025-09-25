@@ -1,0 +1,59 @@
+Steps to Create a Spring Boot Application :
+1. Install Prerequisites
+Java JDK (21 Version recommended) → check with:
+> java -version
+Maven (if not bundled with IDE) → check with:
+mvn -v
+IDE: IntelliJ IDEA / Eclipse / VS Code (with Java extension).
+2. Create Project (Using Spring Initializr)
+Application : 1
+Two ways:
+(A) Using Website
+Go to https://start.spring.io
+Select:
+Project: Maven
+Language: Java
+Spring Boot: latest stable (3.5.6)
+Dependencies: 	1.Spring Web (for REST APIs) 
+2. Spring Data JPA and MySQL Driver (if database needed)
+Note: if you want to run only demo app with out using any database, then you should only add Spring Web (for REST APIs).
+Click Generate Project → it downloads a .zip.
+Extract and open in your IDE.
+3. Project Structure (auto-created)
+src/main/java/com/example/demo
+   	└── DemoApplication.java   (main entry point)
+src/main/resources
+   ├── application.properties (config file)
+   └── static/ , templates/   (for web apps)
+
+4. Main Class
+The auto-generated main class looks like:
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+5. Create a Simple REST Controller  : 
+Inside package  com.example.demo:
+>Create java file HelloController.java
+>In java file write the below mentioned lines:
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+public class HelloController {
+    @GetMapping("/hello")
+    public String hello() {
+        return "Hello, Spring Boot!";
+    		}
+}
+6. Run the Application
+Two ways:
+From IDE → Right click DemoApplication.java → Run.
+From Terminal:
+mvn spring-boot:run
+7. Test in Browser/Postman
+Open:
+http://localhost:8080/hello
+➡ You’ll see: Hello, Spring Boot!
+====================================================================
