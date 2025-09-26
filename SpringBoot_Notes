@@ -243,6 +243,22 @@ public class UserService {
     }
 }
 ===========================================================
+Property file entries:
+================================
 
+spring.application.name=gamingclub
+spring.datasource.url=jdbc:mysql://localhost:3306/gamingclub?useSSL=false&serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=suman123
+
+# JPA settings
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+
+# Logging
+logging.level.org.springframework=INFO
+logging.level.com.gamingclub=DEBUG
 
 
