@@ -300,6 +300,7 @@ Invalid phone number or password
 
 ========================================================================
 ========================================================================
+1>
 package com.gaming.model;
 import jakarta.persistence.*;
 @Entity
@@ -341,7 +342,7 @@ public class Game {
 }
 
 ========================================================================================
-
+2>
 package com.gaming.repository;
 
 import com.gaming.model.Game;
@@ -352,6 +353,7 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     Optional<Game> findByName(String name);
 }
 ====================================================================================
+3>
 package com.gaming.controller;
 
 import com.gaming.dto.request.GameRequest;
@@ -416,6 +418,7 @@ public class GameController {
     }
 }
 ====================================================================
+4>
 package com.gaming.service;
 
 import com.gaming.dto.request.GameRequest;
@@ -505,95 +508,44 @@ public class GameService {
     }
 }
 ===================================================================
-package com.gaming.service;
+5>
+package com.gaming.dto.request;
 
-import com.gaming.dto.request.GameRequest;
-import com.gaming.dto.response.GameResponse;
-import com.gaming.exception.ResourceNotFoundException;
-import com.gaming.model.Game;
-import com.gaming.repository.GameRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
-import java.util.List;
-import java.util.stream.Collectors;
+public class GameRequest {
 
-@Service
-public class GameService {
+    @NotBlank(message = "Name is required")
+    private String name;
 
-    private final GameRepository gameRepository;
-    private static final Logger logger = LoggerFactory.getLogger(GameService.class);
+    private String description;
 
-    public GameService(GameRepository gameRepository) {
-        this.gameRepository = gameRepository;
-    }
+    private String category;
 
-    // Create
-    public GameResponse createGame(GameRequest request) {
-        logger.debug("Creating game: {}", request.getName());
+    @NotNull(message = "Cost per minute is required")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Cost per minute cannot be negative")
+    private Double costPerMinute;
 
-        Game game = new Game();
-        game.setName(request.getName());
-        game.setDescription(request.getDescription());
-        game.setCategory(request.getCategory());
-        game.setCostPerMinute(request.getCostPerMinute());
+    public GameRequest() {}
 
-        Game saved = gameRepository.save(game);
-        return mapToResponse(saved);
-    }
+    // Getters & Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    // Read all
-    public List<GameResponse> getAllGames() {
-        logger.debug("Fetching all games");
-        return gameRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    // Read one
-    public GameResponse getGameById(Long id) {
-        logger.debug("Fetching game with id={}", id);
-        Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Game not found with id: " + id));
-        return mapToResponse(game);
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    // Update
-    public GameResponse updateGame(Long id, GameRequest request) {
-        logger.debug("Updating game id={}", id);
-        Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Game not found with id: " + id));
-
-        game.setName(request.getName());
-        game.setDescription(request.getDescription());
-        game.setCategory(request.getCategory());
-        game.setCostPerMinute(request.getCostPerMinute());
-
-        Game updated = gameRepository.save(game);
-        return mapToResponse(updated);
-    }
-
-    // Delete
-    public void deleteGame(Long id) {
-        logger.debug("Deleting game id={}", id);
-        Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Game not found with id: " + id));
-        gameRepository.delete(game);
-    }
-
-    // Mapping
-    private GameResponse mapToResponse(Game game) {
-        GameResponse r = new GameResponse();
-        r.setId(game.getId());
-        r.setName(game.getName());
-        r.setDescription(game.getDescription());
-        r.setCategory(game.getCategory());
-        r.setCostPerMinute(game.getCostPerMinute());
-        return r;
-    }
+    public Double getCostPerMinute() { return costPerMinute; }
+    public void setCostPerMinute(Double costPerMinute) { this.costPerMinute = costPerMinute; }
 }
 =============================================================================
+6>
 package com.gaming.dto.response;
 
 import java.math.BigDecimal;
@@ -625,6 +577,7 @@ public class GameResponse {
     public void setCostPerMinute(Double costPerMinute) { this.costPerMinute = costPerMinute; }
 }
 =====================================================================
+7>
 package com.gaming.exception;
 
 import com.gaming.dto.response.ApiResponse;
@@ -685,6 +638,7 @@ public class GlobalExceptionHandler {
     }
 }
 ================================================================
+8>
 package com.gaming.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
