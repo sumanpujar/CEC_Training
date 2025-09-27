@@ -261,4 +261,43 @@ spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
 logging.level.org.springframework=INFO
 logging.level.com.gamingclub=DEBUG
 
+============================================================
+API Endpoints with Request & Response for USERS table
+Signup : API
+POST  /api/auth/signup
+
+example:  POST  http://localhost/api/auth/signup
+Content-Type: application/json
+Request:
+{
+  "name": "Suman",
+  "phone": "8888564535",
+  "password": "mypassword"
+}
+Response:
+{
+  "id": 1,
+  "name": "Suman",
+  "phone": "8888564535",
+  "password": "mypassword",
+  "createdAt": "2025-09-26T00:31:27.2943571"
+}
+----------------------------------------------------------------------------------------
+Login
+POST /api/auth/login
+Content-Type: application/json
+
+Request :
+
+{
+  "phone": "8888564535",
+  "password": "mypassword"
+}
+Response:
+Login successful! Welcome Suman
+If wrong password:
+Invalid phone number or password
+
+================================================
+
 
