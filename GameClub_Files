@@ -214,4 +214,473 @@ public class CollectionController {
         return ResponseEntity.ok(new ApiResponse<>(200, result, null));
     }
 }
-===================================================
+======================================================================
+
+package com.gaming.repository;
+
+import com.gaming.model.Collection;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.time.LocalDate;
+import java.util.Optional;
+
+public interface CollectionRepository extends JpaRepository<Collection, Integer> {
+    Optional<Collection> findByDate(LocalDate date);
+}
+---------------------------------------------------------------
+package com.gaming.repository;
+
+import com.gaming.model.GameSession;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface GameSessionRepository extends JpaRepository<GameSession, Long> {
+    List<GameSession> findByMemberId(Long memberId);
+}
+------------------------------------------------
+package com.gaming.repository;
+
+import com.gaming.model.Member;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
+
+public interface MemberRepository extends JpaRepository<Member, Long> {
+    Optional<Member> findByEmail(String email);
+}
+-----------------------------------------------
+package com.gaming.repository;
+
+import com.gaming.model.Recharge;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+
+public interface RechargeRepository extends JpaRepository<Recharge, Long> {
+    List<Recharge> findByMemberId(Long memberId);
+}
+-------------------------SERVICE FILES ----------------------
+package com.gaming.service;
+
+import com.gaming.dto.request.CollectionRequest;
+import com.gaming.dto.response.CollectionResponse;
+import com.gaming.exception.ResourceNotFoundException;
+import com.gaming.model.Collection;
+import com.gaming.repository.CollectionRepository;
+import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class CollectionService {
+
+    private final CollectionRepository collectionRepository;
+
+    public CollectionService(CollectionRepository collectionRepository) {
+        this.collectionRepository = collectionRepository;
+    }
+
+    public void addToCollection(double amount) {
+        LocalDate today = LocalDate.now();
+
+        Collection collection = collectionRepository.findByDate(today)
+                .orElse(new Collection(0, today));
+
+        collection.setAmount(collection.getAmount() + amount);
+        collectionRepository.save(collection);
+    }
+    
+    public CollectionResponse createCollection(CollectionRequest request) {
+        Collection collection = new Collection();
+        collection.setAmount(request.getAmount());
+        collection.setDate(request.getDate());
+
+        Collection saved = collectionRepository.save(collection);
+        return mapToResponse(saved);
+    }
+
+    public List<CollectionResponse> getAllCollections() {
+        return collectionRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public CollectionResponse getCollectionById(int id) {
+        Collection collection = collectionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Collection not found with id: " + id));
+        return mapToResponse(collection);
+    }
+
+    public CollectionResponse updateCollection(int id, CollectionRequest request) {
+        Collection collection = collectionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Collection not found with id: " + id));
+
+        collection.setAmount(request.getAmount());
+        collection.setDate(request.getDate());
+
+        Collection updated = collectionRepository.save(collection);
+        return mapToResponse(updated);
+    }
+
+    public String deleteCollection(int id) {
+        Collection collection = collectionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Collection not found with id: " + id));
+        collectionRepository.delete(collection);
+        return "Collection deleted successfully";
+    }
+
+    private CollectionResponse mapToResponse(Collection collection) {
+        CollectionResponse response = new CollectionResponse();
+        response.setId(collection.getId());
+        response.setAmount(collection.getAmount());
+        response.setDate(collection.getDate());
+        return response;
+    }
+}
+--------------------------------------------------------
+package com.gaming.service;
+
+import com.gaming.dto.request.GameSessionRequest;
+import com.gaming.dto.response.GameSessionResponse;
+import com.gaming.dto.response.ApiResponse;
+import com.gaming.model.Game;
+import com.gaming.model.GameSession;
+import com.gaming.model.Member;
+import com.gaming.repository.GameRepository;
+import com.gaming.repository.GameSessionRepository;
+import com.gaming.repository.MemberRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class GameSessionService {
+
+    private final GameSessionRepository sessionRepository;
+    private final MemberRepository memberRepository;
+    private final GameRepository gameRepository;
+
+    // scaling factor: 1 real minute = 5 virtual minutes
+    private static final int TIME_SCALE = 5;
+
+    public GameSessionService(GameSessionRepository sessionRepository,
+                              MemberRepository memberRepository,
+                              GameRepository gameRepository) {
+        this.sessionRepository = sessionRepository;
+        this.memberRepository = memberRepository;
+        this.gameRepository = gameRepository;
+    }
+
+    public ApiResponse<GameSessionResponse> startSession(GameSessionRequest request) {
+        Member member = memberRepository.findById(request.getMemberId())
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+        Game game = gameRepository.findById(request.getGameId())
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        GameSession session = new GameSession();
+        session.setMember(member);
+        session.setGame(game);
+        session.setStartedAt(LocalDateTime.now());
+
+        sessionRepository.save(session);
+
+        GameSessionResponse response = new GameSessionResponse();
+        response.setMessage("Game session started successfully for member " + member.getName());
+        response.setGameName(game.getName());
+        response.setMemberName(member.getName());
+        response.setStartedAt(session.getStartedAt());
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Session started", response);
+    }
+
+    public ApiResponse<GameSessionResponse> endSession(Long sessionId) {
+        GameSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        if (session.getEndedAt() != null) {
+            throw new RuntimeException("Session already ended");
+        }
+
+        session.setEndedAt(LocalDateTime.now());
+
+        // Calculate scaled duration
+        long realMinutes = Duration.between(session.getStartedAt(), session.getEndedAt()).toMinutes();
+        long virtualMinutes = realMinutes * TIME_SCALE;
+
+        double cost = virtualMinutes * session.getGame().getCostPerMinute();
+
+        Member member = session.getMember();
+        if (member.getBalance() < cost) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        member.setBalance(member.getBalance() - cost);
+        memberRepository.save(member);
+
+        session.setMinutesPlayed((int) virtualMinutes);
+        session.setCost(cost);
+        sessionRepository.save(session);
+
+        GameSessionResponse response = new GameSessionResponse();
+        response.setMessage("Game session ended successfully for member " + member.getName());
+        response.setGameName(session.getGame().getName());
+        response.setMemberName(member.getName());
+        response.setStartedAt(session.getStartedAt());
+        response.setEndedAt(session.getEndedAt());
+        response.setCost(cost);
+        response.setUpdatedBalance(member.getBalance());
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Session ended", response);
+    }
+
+    public ApiResponse<List<GameSessionResponse>> listAllSessions() {
+        List<GameSessionResponse> sessions = sessionRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "All sessions fetched", sessions);
+    }
+
+    public ApiResponse<List<GameSessionResponse>> listSessionsByMember(Long memberId) {
+        List<GameSessionResponse> sessions = sessionRepository.findByMemberId(memberId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "Sessions for member fetched", sessions);
+    }
+
+    private GameSessionResponse mapToResponse(GameSession session) {
+        GameSessionResponse response = new GameSessionResponse();
+        response.setGameName(session.getGame().getName());
+        response.setMemberName(session.getMember().getName());
+        response.setStartedAt(session.getStartedAt());
+        response.setEndedAt(session.getEndedAt());
+        response.setCost(session.getCost());
+        response.setUpdatedBalance(session.getMember().getBalance());
+        return response;
+    }
+}
+-----------------------------------------------------------
+package com.gaming.service;
+
+import com.gaming.dto.request.MemberRequest;
+import com.gaming.dto.response.MemberResponse;
+import com.gaming.exception.ResourceNotFoundException;
+import com.gaming.model.Member;
+import com.gaming.repository.MemberRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+    private static final Logger logger = LoggerFactory.getLogger(MemberService.class);
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    // Create
+    public MemberResponse createMember(MemberRequest request) {
+        logger.debug("Creating member: {}", request.getEmail());
+
+        Member member = new Member();
+        member.setName(request.getName());
+        member.setEmail(request.getEmail());
+        member.setPhone(request.getPhone());
+        member.setPassword(request.getPassword());
+        member.setBio(request.getBio());
+        member.setBalance(0.0); // default balance
+
+        try {
+            Member saved = memberRepository.save(member);
+            return mapToResponse(saved);
+        } catch (DataIntegrityViolationException ex) {
+            if (ex.getMessage().contains("members.email")) {
+                throw new DataIntegrityViolationException("Email must be unique. A member with this email already exists.");
+            }
+            throw ex;
+        }
+    }
+
+    // Read all
+    public List<MemberResponse> getAllMembers() {
+        logger.debug("Fetching all members");
+        return memberRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Read one
+    public MemberResponse getMemberById(Long id) {
+        logger.debug("Fetching member id={}", id);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
+        return mapToResponse(member);
+    }
+
+    // Update
+    public MemberResponse updateMember(Long id, MemberRequest request) {
+        logger.debug("Updating member id={}", id);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
+
+        member.setName(request.getName());
+        member.setEmail(request.getEmail());
+        member.setPhone(request.getPhone());
+        member.setPassword(request.getPassword());
+        member.setBio(request.getBio());
+
+        try {
+            Member updated = memberRepository.save(member);
+            return mapToResponse(updated);
+        } catch (DataIntegrityViolationException ex) {
+            if (ex.getMessage().contains("members.email")) {
+                throw new DataIntegrityViolationException("Email must be unique. A member with this email already exists.");
+            }
+            throw ex;
+        }
+    }
+
+    // Delete
+    public void deleteMember(Long id) {
+        logger.debug("Deleting member id={}", id);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
+        memberRepository.delete(member);
+    }
+
+    // Mapper
+    private MemberResponse mapToResponse(Member member) {
+        MemberResponse r = new MemberResponse();
+        r.setId(member.getId());
+        r.setName(member.getName());
+        r.setEmail(member.getEmail());
+        r.setPhone(member.getPhone());
+        r.setBio(member.getBio());
+        r.setBalance(member.getBalance());
+        return r;
+    }
+}
+-----------------------------------------------
+package com.gaming.service;
+
+import com.gaming.dto.request.MemberRequest;
+import com.gaming.dto.response.MemberResponse;
+import com.gaming.exception.ResourceNotFoundException;
+import com.gaming.model.Member;
+import com.gaming.repository.MemberRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+    private static final Logger logger = LoggerFactory.getLogger(MemberService.class);
+
+    public MemberService(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+
+    // Create
+    public MemberResponse createMember(MemberRequest request) {
+        logger.debug("Creating member: {}", request.getEmail());
+
+        Member member = new Member();
+        member.setName(request.getName());
+        member.setEmail(request.getEmail());
+        member.setPhone(request.getPhone());
+        member.setPassword(request.getPassword());
+        member.setBio(request.getBio());
+        member.setBalance(0.0); // default balance
+
+        try {
+            Member saved = memberRepository.save(member);
+            return mapToResponse(saved);
+        } catch (DataIntegrityViolationException ex) {
+            if (ex.getMessage().contains("members.email")) {
+                throw new DataIntegrityViolationException("Email must be unique. A member with this email already exists.");
+            }
+            throw ex;
+        }
+    }
+
+    // Read all
+    public List<MemberResponse> getAllMembers() {
+        logger.debug("Fetching all members");
+        return memberRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Read one
+    public MemberResponse getMemberById(Long id) {
+        logger.debug("Fetching member id={}", id);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
+        return mapToResponse(member);
+    }
+
+    // Update
+    public MemberResponse updateMember(Long id, MemberRequest request) {
+        logger.debug("Updating member id={}", id);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
+
+        member.setName(request.getName());
+        member.setEmail(request.getEmail());
+        member.setPhone(request.getPhone());
+        member.setPassword(request.getPassword());
+        member.setBio(request.getBio());
+
+        try {
+            Member updated = memberRepository.save(member);
+            return mapToResponse(updated);
+        } catch (DataIntegrityViolationException ex) {
+            if (ex.getMessage().contains("members.email")) {
+                throw new DataIntegrityViolationException("Email must be unique. A member with this email already exists.");
+            }
+            throw ex;
+        }
+    }
+
+    // Delete
+    public void deleteMember(Long id) {
+        logger.debug("Deleting member id={}", id);
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + id));
+        memberRepository.delete(member);
+    }
+
+    // Mapper
+    private MemberResponse mapToResponse(Member member) {
+        MemberResponse r = new MemberResponse();
+        r.setId(member.getId());
+        r.setName(member.getName());
+        r.setEmail(member.getEmail());
+        r.setPhone(member.getPhone());
+        r.setBio(member.getBio());
+        r.setBalance(member.getBalance());
+        return r;
+    }
+}
+--------------------- DTO / REQUEST FILES -------------------------
+
+
