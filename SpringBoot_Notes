@@ -682,3 +682,212 @@ public class ApiResponse<T> {
     public T getData() { return data; }
     public void setData(T data) { this.data = data; }
 }
+=================================================================================
+/model/Member.java
+-------------------
+package com.gaming.model;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "members", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email")
+})
+public class Member {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String phone;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(nullable = false)
+    private double balance = 0.0;
+
+    public Member() {}
+
+    // --- Getters & Setters ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+}
+
+===================================================================================
+package com.gaming.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "recharges")
+public class Recharge {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY) 
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    @Column(nullable = false)
+    private double amount;
+
+    @Column(nullable = false)
+    private double updatedBalance;
+
+    @Column(nullable = false)
+    private LocalDateTime rechargeAt;
+
+    public Recharge() {}
+
+    // --- Getters & Setters ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Member getMember() { return member; }
+    public void setMember(Member member) { this.member = member; }
+
+    public double getAmount() { return amount; }
+    public void setAmount(double amount) { this.amount = amount; }
+
+    public double getUpdatedBalance() { return updatedBalance; }
+    public void setUpdatedBalance(double updatedBalance) { this.updatedBalance = updatedBalance; }
+
+    public LocalDateTime getRechargeAt() { return rechargeAt; }
+    public void setRechargeAt(LocalDateTime rechargeAt) { this.rechargeAt = rechargeAt; }
+
+	public void setCreatedAt(LocalDateTime now) {
+				this.rechargeAt = now;
+	}
+}
+==========================================================================
+package com.gaming.model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "game_sessions")
+public class GameSession {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "game_id")
+    private Game game;
+
+    @Column(nullable = false)
+    private int minutesPlayed;
+
+    @Column(nullable = false)
+    private double cost;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime startedAt = LocalDateTime.now();
+
+    @Column
+    private LocalDateTime endedAt;
+
+    public GameSession() {}
+
+    // Getters & Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Member getMember() { return member; }
+    public void setMember(Member member) { this.member = member; }
+
+    public Game getGame() { return game; }
+    public void setGame(Game game) { this.game = game; }
+
+    public int getMinutesPlayed() { return minutesPlayed; }
+    public void setMinutesPlayed(int minutesPlayed) { this.minutesPlayed = minutesPlayed; }
+
+    public double getCost() { return cost; }
+    public void setCost(double cost) { this.cost = cost; }
+
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+
+    public LocalDateTime getEndedAt() { return endedAt; }
+    public void setEndedAt(LocalDateTime endedAt) { this.endedAt = endedAt; }
+}
+==================================================================================
+package com.gaming.model;
+
+import java.time.LocalDate;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="collections")
+public class Collection {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private double amount;
+    private LocalDate date;
+    
+    public Collection() {}
+	public Collection(double amount, LocalDate date) {
+		super();
+		this.amount = amount;
+		this.date = date;
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public double getAmount() {
+		return amount;
+	}
+	public void setAmount(double amount) {
+		this.amount = amount;
+	}
+	public LocalDate getDate() {
+		return date;
+	}
+	public LocalDate setDate(LocalDate date) {
+		return this.date = date;
+	}
+}
+=========================================================================
+
