@@ -1,0 +1,217 @@
+package com.gaming.controller;
+
+import com.gaming.dto.request.MemberRequest;
+import com.gaming.dto.response.ApiResponse;
+import com.gaming.dto.response.MemberResponse;
+import com.gaming.service.MemberService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+import java.util.List;
+
+@RestController
+@RequestMapping("/members")
+public class MemberController {
+
+    private final MemberService memberService;
+
+    public MemberController(MemberService memberService) {
+        this.memberService = memberService;
+    }
+
+    // Create member
+    @PostMapping
+    public ResponseEntity<ApiResponse<MemberResponse>> createMember(@Valid @RequestBody MemberRequest request) {
+        MemberResponse response = memberService.createMember(request);
+        ApiResponse<MemberResponse> apiResponse = new ApiResponse<>(201, "Member created successfully", response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+    }
+
+    // Get all members
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<MemberResponse>>> getAllMembers() {
+        List<MemberResponse> members = memberService.getAllMembers();
+        ApiResponse<List<MemberResponse>> apiResponse = new ApiResponse<>(200, "Members fetched successfully", members);
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // Get member by id
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<MemberResponse>> getMemberById(@PathVariable Long id) {
+        MemberResponse response = memberService.getMemberById(id);
+        ApiResponse<MemberResponse> apiResponse = new ApiResponse<>(200, "Member fetched successfully", response);
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // Update member
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<MemberResponse>> updateMember(@PathVariable Long id,
+                                                                    @Valid @RequestBody MemberRequest request) {
+        MemberResponse response = memberService.updateMember(id, request);
+        ApiResponse<MemberResponse> apiResponse = new ApiResponse<>(200, "Member updated successfully", response);
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // Delete member
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteMember(@PathVariable Long id) {
+        memberService.deleteMember(id);
+        ApiResponse<Void> apiResponse = new ApiResponse<>(200, "Member deleted successfully", null);
+        return ResponseEntity.ok(apiResponse);
+    }
+}
+===========================================================
+package com.gaming.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.gaming.dto.request.RechargeRequest;
+import com.gaming.dto.response.ApiResponse;
+import com.gaming.dto.response.RechargeResponse;
+import com.gaming.service.RechargeService;
+import jakarta.validation.Valid;
+
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/recharges")
+public class RechargeController {
+
+    private final RechargeService rechargeService;
+
+    public RechargeController(RechargeService rechargeService) {
+        this.rechargeService = rechargeService;
+    }
+
+    // Recharge member
+    @PostMapping
+    public ResponseEntity<ApiResponse<RechargeResponse>> rechargeMember(@Valid @RequestBody RechargeRequest request) {
+        RechargeResponse response = rechargeService.rechargeMember(request);
+
+        String successMessage = String.format(
+                "Recharge successful for member %s. Updated balance: %.2f",
+                response.getMemberName(),
+                response.getUpdatedBalance()
+        );
+
+        ApiResponse<RechargeResponse> apiResponse =
+                new ApiResponse<>(201, successMessage, response);
+
+        return ResponseEntity.status(201).body(apiResponse);
+    }
+
+    // Get all recharges
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<RechargeResponse>>> getAllRecharges() {
+        List<RechargeResponse> list = rechargeService.getAllRecharges();
+        ApiResponse<List<RechargeResponse>> apiResponse = new ApiResponse<>(200, "Recharges fetched successfully", list);
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    // Get recharges by member
+    @GetMapping("/member/{memberId}")
+    public ResponseEntity<ApiResponse<List<RechargeResponse>>> getRechargesByMember(@PathVariable Long memberId) {
+        List<RechargeResponse> list = rechargeService.getRechargesByMember(memberId);
+        ApiResponse<List<RechargeResponse>> apiResponse = new ApiResponse<>(200, "Recharges fetched for member successfully", list);
+        return ResponseEntity.ok(apiResponse);
+    }
+}
+================================================================
+package com.gaming.controller;
+
+import com.gaming.dto.request.GameSessionRequest;
+import com.gaming.dto.response.ApiResponse;
+import com.gaming.dto.response.GameSessionResponse;
+import com.gaming.service.GameSessionService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/sessions")
+public class GameSessionController {
+
+    private final GameSessionService gameSessionService;
+
+    public GameSessionController(GameSessionService gameSessionService) {
+        this.gameSessionService = gameSessionService;
+    }
+
+    @PostMapping("/start")
+    public ApiResponse<GameSessionResponse> startSession(@RequestBody GameSessionRequest request) {
+        return gameSessionService.startSession(request);
+    }
+
+    @PutMapping("/end/{sessionId}")
+    public ApiResponse<GameSessionResponse> endSession(@PathVariable Long sessionId) {
+        return gameSessionService.endSession(sessionId);
+    }
+
+    @GetMapping
+    public ApiResponse<List<GameSessionResponse>> getAllSessions() {
+        return gameSessionService.listAllSessions();
+    }
+
+    @GetMapping("/member/{memberId}")
+    public ApiResponse<List<GameSessionResponse>> getMemberSessions(@PathVariable Long memberId) {
+        return gameSessionService.listSessionsByMember(memberId);
+    }
+}
+=====================================================================
+package com.gaming.controller;
+
+import com.gaming.dto.request.CollectionRequest;
+import com.gaming.dto.response.CollectionResponse;
+import com.gaming.service.CollectionService;
+import com.gaming.dto.response.ApiResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/collections")
+public class CollectionController {
+
+    private final CollectionService collectionService;
+
+    public CollectionController(CollectionService collectionService) {
+        this.collectionService = collectionService;
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<CollectionResponse>> create(@RequestBody CollectionRequest request) {
+        CollectionResponse response = collectionService.createCollection(request);
+        return ResponseEntity.status(201)
+                .body(new ApiResponse<>(201, "Collection created successfully", response));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<CollectionResponse>>> getAll() {
+        List<CollectionResponse> list = collectionService.getAllCollections();
+        return ResponseEntity.ok(new ApiResponse<>(200, "All collections fetched", list));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CollectionResponse>> getById(@PathVariable int id) {
+        CollectionResponse response = collectionService.getCollectionById(id);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Collection fetched successfully", response));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<CollectionResponse>> update(@PathVariable int id,
+                                                                  @RequestBody CollectionRequest request) {
+        CollectionResponse response = collectionService.updateCollection(id, request);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Collection updated successfully", response));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> delete(@PathVariable int id) {
+        String result = collectionService.deleteCollection(id);
+        return ResponseEntity.ok(new ApiResponse<>(200, result, null));
+    }
+}
+===================================================
