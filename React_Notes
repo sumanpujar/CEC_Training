@@ -1,0 +1,286 @@
+React is a component-based, declarative UI library. Unlike traditional apps (where control flow is top-down and imperative),
+React’s flow is data-driven — meaning the UI updates automatically when state or props change.
+
+Control Flow in a React App
+1. Entry Point
+
+React apps usually start at index.js (or main.jsx in Vite).
+
+Example:
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+
+Here:
+
+index.html contains <div id="root"></div>.
+
+React mounts your app into this root.
+
+2. Top-Level Component (App)
+
+App.jsx is the root component.
+
+It holds global logic (routing, layouts, context).
+
+Example:
+
+function App() {
+  return (
+    <div>
+      <Header />
+      <Home />
+      <Footer />
+    </div>
+  );
+}
+
+3. Props (Data Flow Down)
+
+Props are like arguments passed from parent to child.
+
+Control flows top → down.
+
+function Welcome({ name }) {
+  return <h1>Hello, {name}</h1>;
+}
+
+function App() {
+  return <Welcome name="Aakash" />;
+}
+
+4. State (Component’s Own Data)
+
+Components manage internal data using useState.
+
+When state changes → React re-renders the component.
+
+function Counter() {
+  const [count, setCount] = React.useState(0);
+
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+
+
+Flow:
+
+User clicks → event handler fires.
+
+setCount updates state.
+
+React re-renders UI with new value.
+
+5. Events (User → Component)
+
+Events (like click, input, submit) are the reverse flow:
+User → Component logic → State change → UI update.
+
+6. Rendering (Virtual DOM → Real DOM)
+
+React builds a Virtual DOM tree.
+
+On changes, React compares (diffing) and updates only what’s necessary in the real DOM → efficient rendering.
+
+7. Side Effects (useEffect)
+
+For async tasks (API calls, subscriptions, timers), React uses useEffect.
+
+Control flow:
+
+Component renders.
+
+After render, useEffect runs.
+
+Cleanup runs before re-running or unmounting.
+
+React.useEffect(() => {
+  console.log("Component mounted");
+  return () => console.log("Cleanup on unmount");
+}, []);
+============================================
+
+Summary of Flow :
+---------------
+
+1> App starts → index.js renders <App /> into #root.
+
+2>Props flow down from parent → child.
+
+3> Events & user actions update state.
+
+4> State changes trigger re-renders (React re-renders only affected parts).
+
+5> Virtual DOM updates Real DOM efficiently.
+
+6> useEffect handles async/side effects.
+====================================================
+
+What is the Virtual DOM in React?
+
+The DOM (Document Object Model) is the tree-like structure that represents your webpage in the browser.
+Example:
+
+<div>
+  <h1>Hello</h1>
+  <button>Click</button>
+</div>
+
+
+Browser DOM Tree looks like:
+
+div
+ ├─ h1
+ └─ button
+==============================
+Problem with the Real DOM :
+
+>Updating the real DOM is slow because it repaints/reflows the entire UI.
+
+Example: If you only change button text, the browser still re-checks the whole tree.
+---------------------
+React’s Virtual DOM
+----------------------
+The Virtual DOM (VDOM) is a lightweight copy of the real DOM kept in memory.
+
+React uses it to track changes efficiently.
+-------------------------------------
+
+How It Works ?
+
+When state/props change → React creates a new Virtual DOM tree.
+
+React compares new VDOM with the old one (Diffing Algorithm).
+
+React finds the minimum set of changes.
+
+React updates only the changed parts in the real DOM (Reconciliation).
+--------------------------------
+Example :
+function Counter() {
+  const [count, setCount] = React.useState(0);
+  return (
+    <div>
+      <h1>{count}</h1>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+---------------------------------
+HERE 
+Initially, VDOM = <h1>0</h1>.
+
+User clicks → state changes → new VDOM = <h1>1</h1>.
+
+React compares old vs new:
+
+Only <h1> changed.
+
+React updates only <h1> in the real DOM → much faster.
+----------------------------------------
+Benefits:
+==========
+1>Faster UI updates (only update what’s necessary).
+2>Smooth performance for dynamic apps.
+
+3>Simpler programming model: "Just declare UI, React optimizes updates."
+
+In short:
+The Virtual DOM is React’s smart in-memory representation of the UI, which makes 
+rendering fast by updating only the parts that change, not the whole page.
+
+================================================================
+What is useState in React ?
+
+useState is a React Hook that lets you add state to functional components.
+
+State = data that can change and re-render the UI when updated.
+
+Syntax :
+const [state, setState] = useState(initialValue);
+state: current value
+setState: function to update value
+initialValue: starting value
+---------------------------------
+Example: Counter
+import React, { useState } from "react";
+function Counter() {
+  const [count, setCount] = useState(0); // initial value = 0
+  return (
+    <div>
+      <h1>{count}</h1>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+
+export default Counter;
+---------------------------------
+
+Each time you click the button:
+setCount updates the state.
+Component re-renders.
+UI shows the new value.
+-------------------------------------
+🔹 useEffect in React
+
+useEffect is a side-effect hook.
+
+Used for things outside React’s rendering, like:
+
+> Fetching API data
+
+> Subscribing/unsubscribing
+
+> Updating the document title
+
+>Setting timers
+---------------------------
+Syntax
+useEffect(() => {
+  // code runs after render
+}, [dependencies]);
+
+
+Callback: runs after render.
+
+Dependencies: tells React when to re-run effect.
+
+Example: Update Page Title
+import React, { useState, useEffect } from "react";
+
+function TitleUpdater() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    document.title = `Count is ${count}`;
+  }, [count]); // runs every time count changes
+
+  return (
+    <div>
+      <h1>{count}</h1>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+
+export default TitleUpdater;
+------------------------------------------------------------------------------------------
+
+Control Flow:
+
+Component renders.
+
+useEffect runs → updates page title.
+
+If count changes → effect runs again.
+==================================================
+
