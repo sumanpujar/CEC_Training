@@ -682,5 +682,258 @@ public class MemberService {
     }
 }
 --------------------- DTO / REQUEST FILES -------------------------
+package com.gaming.dto.request;
 
+import jakarta.validation.constraints.*;
+
+public class MemberRequest {
+
+    @NotBlank(message = "Name is required")
+    @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
+    private String name;
+
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
+    private String email;
+
+    @NotBlank(message = "Phone is required")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Phone must be 10 digits")
+    private String phone;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+
+    @Size(max = 500, message = "Bio can be at most 500 characters")
+    private String bio;
+
+    // --- Getters & Setters ---
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+}
+---------------------------------------------
+package com.gaming.dto.request;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
+public class RechargeRequest {
+
+    @NotNull(message = "Member ID is required")
+    private Long memberId;
+
+    @Min(value = 1, message = "Amount must be greater than 0")
+    private double amount;
+
+    // --- Getters & Setters ---
+    public Long getMemberId() { return memberId; }
+    public void setMemberId(Long memberId) { this.memberId = memberId; }
+
+    public double getAmount() { return amount; }
+    public void setAmount(double amount) { this.amount = amount; }
+}
+-----------------------------------------------------
+package com.gaming.dto.request;
+
+public class GameSessionRequest {
+    private Long memberId;
+    private Long gameId;
+    private int minutesPlayed;
+
+    // Getters & Setters
+    public Long getMemberId() { return memberId; }
+    public void setMemberId(Long memberId) { this.memberId = memberId; }
+
+    public Long getGameId() { return gameId; }
+    public void setGameId(Long gameId) { this.gameId = gameId; }
+
+    public int getMinutesPlayed() { return minutesPlayed; }
+    public void setMinutesPlayed(int minutesPlayed) { this.minutesPlayed = minutesPlayed; }
+}
+----------------------------------------------
+package com.gaming.dto.request;
+
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
+
+public class CollectionRequest {
+
+    @NotNull(message = "Amount is required")
+    private Float amount;
+
+    @NotNull(message = "Date is required")
+    private LocalDate date;
+
+    // Getters and Setters
+    public Float getAmount() {
+        return amount;
+    }
+    public void setAmount(Float amount) {
+        this.amount = amount;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+}
+-------------------- DTO/RESPONSE FILES----------------------
+package com.gaming.dto.response;
+
+public class MemberResponse {
+
+    private Long id;
+    private String name;
+    private String email;
+    private String phone;
+    private String bio;
+    private Double balance;
+
+    public MemberResponse() {}
+
+    public MemberResponse(Long id, String name, String email, String phone, String bio, Double balance) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.bio = bio;
+        this.balance = balance;
+    }
+
+    // --- Getters & Setters ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
+    public Double getBalance() { return balance; }
+    public void setBalance(Double balance) { this.balance = balance; }
+}
+-----------------------------------------------
+package com.gaming.dto.response;
+
+import java.time.LocalDateTime;
+
+public class RechargeResponse {
+
+    private Long id;
+    private Long memberId;
+    private String memberName;
+    private double amount;
+    private double updatedBalance;
+    private LocalDateTime rechargeAt;
+
+    // --- Getters & Setters ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getMemberId() { return memberId; }
+    public void setMemberId(Long memberId) { this.memberId = memberId; }
+
+    public String getMemberName() { return memberName; }
+    public void setMemberName(String memberName) { this.memberName = memberName; }
+
+    public double getAmount() { return amount; }
+    public void setAmount(double amount) { this.amount = amount; }
+
+    public double getUpdatedBalance() { return updatedBalance; }
+    public void setUpdatedBalance(double updatedBalance) { this.updatedBalance = updatedBalance; }
+
+    public LocalDateTime getRechargeAt() { return rechargeAt; }
+    public void setRechargeAt(LocalDateTime rechargeAt) { this.rechargeAt = rechargeAt; }
+}
+-------------------------------------------------
+package com.gaming.dto.response;
+
+import java.time.LocalDateTime;
+
+public class GameSessionResponse {
+    private String message;
+    private double cost;
+    private double updatedBalance;
+    private String gameName;
+    private String memberName;
+    private LocalDateTime startedAt;
+    private LocalDateTime endedAt;
+
+    // Getters & Setters
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public double getCost() { return cost; }
+    public void setCost(double cost) { this.cost = cost; }
+
+    public double getUpdatedBalance() { return updatedBalance; }
+    public void setUpdatedBalance(double updatedBalance) { this.updatedBalance = updatedBalance; }
+
+    public String getGameName() { return gameName; }
+    public void setGameName(String gameName) { this.gameName = gameName; }
+
+    public String getMemberName() { return memberName; }
+    public void setMemberName(String memberName) { this.memberName = memberName; }
+
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+
+    public LocalDateTime getEndedAt() { return endedAt; }
+    public void setEndedAt(LocalDateTime endedAt) { this.endedAt = endedAt; }
+}
+----------------------------------------------------------
+
+package com.gaming.dto.response;
+
+import java.time.LocalDate;
+
+public class CollectionResponse {
+    private int id;
+    private double amount;
+    private LocalDate date;
+
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+}
+---------------------------------------------------
 
